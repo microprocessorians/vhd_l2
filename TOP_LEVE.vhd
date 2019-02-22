@@ -126,7 +126,7 @@ Inst_ins_mem: ins_mem
 generic map(data_width=>32,
             add_bits=>7)   
  PORT MAP(
-		pc => '0'&pc(5 downto 0) ,
+		pc => pc(6 downto 0) ,
 		instruction => inst
 	);
 -----------------cu---------
@@ -171,7 +171,7 @@ Inst_data_mem: data_mem
 generic map(data_width=>32,
             add_width=>7) 
 PORT MAP(
-		address =>'0'&alu_result(5 downto 0) ,
+		address =>alu_result(6 downto 0) ,
 		data_in =>RD_2 ,
 		data_out =>Data_memo ,
 		RW => r_w_data_mem,
