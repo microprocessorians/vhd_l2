@@ -1,22 +1,3 @@
-----------------------------------------------------------------------------------
--- Company:mpor 
--- Engineer: ashour
--- 
--- Create Date:    12:04:49 02/22/2019 
--- Design Name: 
--- Module Name:    TOP_level - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
-----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_arith.all;
@@ -58,7 +39,7 @@ port(
 	r_stack: out std_logic;--DONE
 	w_stack: out std_logic;--DONE
 	stack_data_sel: out std_logic;--DONE
-	s: out std_logic_vector(8 downto 1);
+	s: out std_logic_vector(9 downto 1);
 	w_r_n_data_mem: out std_logic;--DONE
 	w_rf: out std_logic--DONE
 );
@@ -109,8 +90,8 @@ signal new_pc:std_logic_vector(31 downto 0);
 signal inst,RD_1,RD_2,alu_operand,alu_result,input_rf,Data_memo,stack_out,stack_in,signal1,signal2,signal3,signal4:std_logic_vector(31 downto 0);
 signal flags,alu_mux_res,rf_mux:std_logic_vector(3 downto 0);
 signal alu_mux_sel,r_stack,w_stack,stack_data_sel,r_w_data_mem,w_rf:std_logic;
-signal signals_sel:std_logic_vector(8 downto 1);
-
+signal signals_sel:std_logic_vector(9 downto 1);
+signal alu_mux_res_2, alu_mux_res_1,alu_mux_res_3: std_logic_vector(3 downto 0);
 begin
 -----pc _async----
 process(clk,reset)
@@ -193,7 +174,7 @@ Rf_mux<=inst(17 downto 14) when (signals_sel(1)='0') else
 -----------------mux to choose between second operand of alu--
 signal1<=inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17 downto 0);
 
-alu_operand<= RD_2 when (signals_sel(2)='0') else
+alu_operand<= RD_2 when (signals_sel(2)='1') else ---EDITED
               signal1;
 --------------mux to choose  data in of reg_file--------------
 with signals_sel(4 downto 3 ) select
@@ -205,19 +186,27 @@ input_rf<= stack_out when "00",
 out_port<= RD_1 when signals_sel(5)='1' else
            (others=>'0');
 ---------------mux to select pc-------------------			  
-signal2<= signed(pc)+conv_signed(1,32);
-signal3<= signed(pc)+conv_signed(1,32)+signed(inst(25)&inst(25)&inst(25)&inst(25)&inst(25)&inst(25 downto 0)&'0');
-signal4<= signed(pc)+conv_signed(1,32)+signed(inst(25)&inst(25)&inst(25)&inst(25)&inst(25)&inst(25)&inst(25)&inst(25)&inst(25)&inst(25)&inst(25)&inst(25)&inst(25)&inst(17 downto 0)&'0');
+signal2<= signed(pc)+conv_signed(1,32); ----------------------------------------EDITED
+signal4<= pc(31 downto 26)&inst(25 downto 0);
+signal3<= signed(pc)+signed(inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17)&inst(17 downto 0));
 
-with signals_sel(8 downto 6 ) select
-new_pc<= pc when "011",
-         signal3 when"010",
-			signal4 when"001",
+with signals_sel(7 downto 6 ) select ------------------------------------------------
+new_pc<= pc when "11",
+         signal3 when"10",
+			signal4 when"01",
 			signal2 when others;
 -----muxto select data enter stack-------
 stack_in<= pc when stack_data_sel='1' else 
            RD_1;
 ----mux to select alu function----------
-alu_mux_res<= inst(13 downto 10) when alu_mux_sel='0' else
+alu_mux_res_1<= inst(13 downto 10) when alu_mux_sel='0' else
               inst(29 downto 26);
+alu_mux_res_2 <= "0000" when alu_mux_sel = '0' else
+		"0001";
+alu_mux_res_3 <= alu_mux_res_2 when signals_sel(8) = '1' else --edited by ashour
+		alu_mux_res_1;
+alu_mux_res <= "0000" when signals_sel(9) ='1' else
+                alu_mux_res_3;
+
+		
 end Behavioral;
