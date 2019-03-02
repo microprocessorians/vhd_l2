@@ -21,8 +21,8 @@ end register_file;
 
 
 architecture behavioral of register_file is
-  type registerFile is array(0 to 31) of std_logic_vector(n-1 downto 0);
-  signal registers : registerFile;
+  type registerFile is array(0 to 15) of std_logic_vector(n-1 downto 0);
+  signal registers : registerFile := (others => (others => '0'));
 begin
   regFile : process (clk,reset) is
   begin
